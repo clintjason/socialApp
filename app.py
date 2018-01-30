@@ -26,9 +26,9 @@ def handle_my_custom_event( json ):
 
 #Config MySQL
 app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'rootjason'
-app.config['MYSQL_DB'] = 'socialapp'
+app.config['MYSQL_USER'] = 'XXXX'
+app.config['MYSQL_PASSWORD'] = 'XXXX'
+app.config['MYSQL_DB'] = 'XXXX'
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 
 #init mysql
