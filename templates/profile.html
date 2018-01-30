@@ -1,0 +1,213 @@
+{% extends 'layout.html' %}
+
+{% block styles %}
+	<style>
+		
+	</style>
+{% endblock %}
+
+
+{% block body %}
+	
+	<div class="container">
+		<div class="row">
+		<div class="col-md-3">
+			<div class="user-profile">
+				<img src="{{url_for('static', filename='img/avatar.png')}}" style="height: 70px; width: 55px; float: left; "  />
+			    <span class="username" style="margin: -10px 0px 0px 20px; float: left;"> <h1>{{ session['username'] }}</h1></span>
+			</div>
+		</div>
+
+
+
+
+			<div class="col-md-6">
+				<div class="panel panel-primary">
+				  <div class="panel-heading text-center">Your Posts</div>
+				  <div class="panel-body">
+
+
+					{% for post in posts: %}
+						<div class="post" style="border: 1px solid #cbcbcb;">
+							<div class="author" style="width: 20%; float: left;">
+								<img src="{{url_for('static', filename='img/avatar.png')}}" style="height: 50px; width: 40px;"  />
+								<span>{{ post['username'] }}</span> &nbsp;
+							</div>
+							<div style="width: 79%; float: left;">
+								<strong>{{ post['title'] }}</strong>
+								<p>{{ post['post'] }}
+								</p>
+							</div>
+						<div class="clearfix"></div>
+						</div>
+
+						<br>
+					{% endfor %}  
+
+				  </div>
+				</div>
+				
+			</div>
+
+
+			<div class="col-md-3">
+
+				<div class="panel panel-primary">
+				  <div class="panel-heading text-center">Friends Requests</div>
+				  <div class="panel-body">
+				    {% for req in friend_requests: %}
+						<div class="profile_info">
+							<img src="{{url_for('static', filename='img/avatar.png')}}" style="height: 50px; width: 40px;"  />
+
+							<div>
+								<strong>{{ req['username'] }}</strong>
+
+								<small>
+									<br>
+									&nbsp; 
+									<button data-id="{{ req['id'] }}" 
+									class="btn btn-info btn-xs accept_fr"> 
+									<span class="glyphicon glyphicon-plus"></span> 
+									Accept</button> 
+									<button data-id="{{ req['id'] }}" 
+									class="btn btn-danger btn-xs reject_fr"> 
+									<span class="glyphicon glyphicon-minus"></span> 
+									Reject</button>
+								</small>
+							</div>
+						</div>
+						<br>
+					{% endfor %}
+				  </div>
+				</div>
+
+
+				<div class="panel panel-primary">
+				  <div class="panel-heading text-center">Your Friends</div>
+				  <div class="panel-body">
+				    {% for fr in friends: %}
+						<div class="profile_info">
+							<img src="{{url_for('static', filename='img/avatar.png')}}" style="height: 50px; width: 40px;"  />
+
+							<div>
+								<strong>{{ fr['username'] }}</strong>
+
+								<small>
+									<br>
+									&nbsp; 
+									<button data-id="{{ fr['id'] }}" 
+									class="btn btn-danger btn-xs reject_fr"> 
+									<span class="glyphicon glyphicon-minus"></span> 
+									Unfriend</button>
+								</small>
+							</div>
+						</div>
+						<br>
+					{% endfor %}
+				  </div>
+				</div>
+
+
+			</div>
+
+		</div>
+	</div>
+
+{%  endblock %}
+
+
+{% block scripts %}
+	<script>
+		$(document).ready(function(){
+
+			sender_id = '{{ session['id'] }}';
+
+			$('.reject_fr').on('click', function(){
+				
+				id = $(this).data('id');
+
+				$(this).parent().parent().parent().hide(1000); // hide the user profile image and username display
+
+				setTimeout(function(){
+					$(this).parent().parent().parent().remove();
+				}, 800);
+				
+				$.ajax({
+					url: '/reject_friend',
+					type: 'POST',
+					data: {
+						'sender_id': sender_id,
+						'receiver_id': id
+					},
+					success: function(response){
+						// alert(response);
+						location.reload();
+					}
+				});
+			});
+
+
+			$('.accept_fr').on('click', function(){
+				
+				id = $(this).data('id');
+
+				$(this).parent().parent().parent().hide(1000);
+
+				setTimeout(function(){
+					$(this).parent().parent().parent().remove();
+				}, 800);
+				
+				$.ajax({
+					url: '/accept_friend',
+					type: 'POST',
+					data: {
+						'sender_id': sender_id,
+						'receiver_id': id
+					},
+					success: function(response){
+;						location.reload();
+					}
+				});
+			});
+
+
+		});
+
+
+
+      var socket = io.connect( 'http://' + document.domain + ':' + location.port )
+      // broadcast a message
+      socket.on( 'connect', function() {
+        socket.emit( 'my event', {
+          data: 'User Connected'
+        } )
+        var form = $( 'form' ).on( 'submit', function( e ) {
+          e.preventDefault()
+          let user_name = $( 'input.username' ).val();
+          let user_input = $( 'input.message' ).val();
+          socket.emit( 'my event', {
+            user_name : user_name,
+            message : user_input
+          } )
+          // empty the input field
+          $( 'input.message' ).val( '' ).focus();
+        } )
+      } )
+
+      // capture message
+      socket.on( 'my response', function( msg ) {
+        console.log( msg )
+        if( typeof msg.user_name !== 'undefined' ) {
+          $( 'h1' ).remove();
+          $( 'div.message_holder' ).append( '<div class="msg_bbl"><b style="color: #000">'+msg.user_name+'</b> '+msg.message+'</div>' );
+        }
+      } )
+
+
+
+	</script>
+
+
+
+
+{% endblock %}
